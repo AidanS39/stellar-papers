@@ -3,7 +3,6 @@ node_modules
 dist
 pnpm-lock.yaml
 package.json
-tsconfig.json
 *.config.js
 *.config.mjs
 *.config.cjs
