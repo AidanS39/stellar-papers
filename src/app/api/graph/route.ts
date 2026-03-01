@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 const BASE_URL = "https://api.openalex.org";
-const EMAIL = "your@email.com"; // polite pool
-const DELAY = 150; // ms between requests
+const EMAIL = process.env.EMAIL ?? "test@example.com";
+const DELAY = 150;
 
 function sleep(ms: number) {
     return new Promise((r) => setTimeout(r, ms));

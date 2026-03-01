@@ -77,9 +77,10 @@ export default function PaperGraph() {
     const [graphData, setGraphData] = useState<GraphData | null>(null);
     const [selected, setSelected] = useState<PaperNode | null>(null);
     const [loading, setLoading] = useState(false);
-    const [query, setQuery] = useState("large language models");
-    const [inputVal, setInputVal] = useState("large language models");
+    const [query, setQuery] = useState("");
+    const [inputVal, setInputVal] = useState("");
     const [target, setTarget] = useState(200);
+    const [hasSearched, setHasSearched] = useState(false);
     const graphRef = useRef<any>(null);
     const maxInDegree = useRef(1);
     const subjectsRef = useRef<string[]>([]);
@@ -116,7 +117,10 @@ export default function PaperGraph() {
     }, []);
 
     useEffect(() => {
-        fetchGraph(query, target);
+        if (query) {
+            setHasSearched(true);
+            fetchGraph(query, target);
+        }
     }, [query, target, fetchGraph]);
 
     // Compute filtered graph data
@@ -203,8 +207,8 @@ export default function PaperGraph() {
                     type="text"
                     value={inputVal}
                     onChange={(e) => setInputVal(e.target.value)}
-                    placeholder="Search papers..."
-                    className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm w-72 focus:outline-none focus:border-blue-500"
+                    placeholder="Search any topic..."
+                    className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm w-96 focus:outline-none focus:border-blue-500"
                 />
                 <select
                     value={target}
@@ -215,6 +219,8 @@ export default function PaperGraph() {
                     <option value={100}>100</option>
                     <option value={200}>200</option>
                     <option value={400}>400</option>
+                    <option value={1000}>1000</option>
+                    <option value={5000}>5000</option>
                 </select>
                 <button
                     type="submit"
@@ -350,6 +356,24 @@ export default function PaperGraph() {
                         Showing {filteredGraphData?.nodes.length || 0} of {graphData.nodes.length}{" "}
                         papers
                     </p>
+                </div>
+            )}
+
+            {/* Empty state */}
+            {!hasSearched && !loading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center max-w-md">
+                        <p className="text-4xl mb-4">🔬</p>
+                        <h2 className="text-xl font-semibold text-white mb-2">
+                            Explore Academic Research
+                        </h2>
+                        <p className="text-gray-400 text-sm leading-relaxed">
+                            Search any topic to visualize the citation network of academic papers
+                            from OpenAlex. Try topics like <em>quantum computing</em>,{" "}
+                            <em>CRISPR gene editing</em>, <em>transformer architecture</em>, or{" "}
+                            <em>climate modeling</em>.
+                        </p>
+                    </div>
                 </div>
             )}
 

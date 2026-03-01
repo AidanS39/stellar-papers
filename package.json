@@ -21,15 +21,20 @@
     "license": "ISC",
     "packageManager": "pnpm@10.27.0",
     "dependencies": {
+        "bcrypt": "^6.0.0",
+        "mongodb": "^7.1.0",
         "next": "^16.1.6",
+        "next-auth": "5.0.0-beta.30",
         "pg": "^8.19.0",
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
-        "react-force-graph-2d": "^1.29.1"
+        "react-force-graph-2d": "^1.29.1",
+        "react-icons": "^5.5.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.3",
         "@tailwindcss/postcss": "^4.2.1",
+        "@types/bcrypt": "^6.0.0",
         "@types/node": "25.3.2",
         "@types/pg": "^8.18.0",
         "@types/react": "^19.2.14",
