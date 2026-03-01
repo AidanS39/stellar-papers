@@ -8,7 +8,7 @@ export interface PaperNode {
         publication_year: number | null;
         publication_date?: string | null;
         institution: string | null;
-        domain: string | null;
+        field: string | null;
         cited_by_count: number | null;
         citation_normalized_percentile?: number | null;
         referenced_works_count?: number | null;
@@ -42,7 +42,7 @@ export interface GraphFilters {
     publication_year_start?: number;
     publication_year_end?: number;
     institution?: string;
-    domain?: string;
+    field?: string;
     keyword?: string;
     limit?: number;
 }

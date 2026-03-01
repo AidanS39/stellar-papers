@@ -99,7 +99,7 @@ export default function PaperGraph() {
 
             // Collect unique domains
             const domains = [
-                ...new Set(nodesWithDegree.map((n) => n.metadata.domain || "Unknown")),
+                ...new Set(nodesWithDegree.map((n) => n.metadata.field || "Unknown")),
             ];
             domainsRef.current = domains;
             setEnabledDomains(new Set(domains));
@@ -138,7 +138,7 @@ export default function PaperGraph() {
         if (!graphData) return null;
 
         const filteredNodes = graphNodes.filter((n) => {
-            const domain = n.metadata.domain || "Unknown";
+            const domain = n.metadata.field || "Unknown";
             if (!enabledDomains.has(domain)) return false;
             const year = n.metadata.publication_year;
             if (year != null && (year < yearRange[0] || year > yearRange[1])) return false;
@@ -174,7 +174,7 @@ export default function PaperGraph() {
     }, []);
 
     const getNodeColor = useCallback((node: GraphNode) => {
-        return getDomainColor(node.metadata.domain || "Unknown", domainsRef.current);
+        return getDomainColor(node.metadata.field || "Unknown", domainsRef.current);
     }, []);
 
     const handleNodeClick = useCallback((node: any) => {
@@ -501,15 +501,15 @@ export default function PaperGraph() {
                         <span
                             className="px-2 py-0.5 rounded text-xs font-medium"
                             style={{
-                                backgroundColor: `${getDomainColor(selected.metadata.domain || "Unknown", domainsRef.current)}22`,
-                                border: `1px solid ${getDomainColor(selected.metadata.domain || "Unknown", domainsRef.current)}`,
+                                backgroundColor: `${getDomainColor(selected.metadata.field || "Unknown", domainsRef.current)}22`,
+                                border: `1px solid ${getDomainColor(selected.metadata.field || "Unknown", domainsRef.current)}`,
                                 color: getDomainColor(
-                                    selected.metadata.domain || "Unknown",
+                                    selected.metadata.field || "Unknown",
                                     domainsRef.current,
                                 ),
                             }}
                         >
-                            {selected.metadata.domain || "Unknown"}
+                            {selected.metadata.field || "Unknown"}
                         </span>
                         {selected.metadata.primary_topic && (
                             <span className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-300">

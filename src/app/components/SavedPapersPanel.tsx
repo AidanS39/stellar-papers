@@ -14,9 +14,10 @@ interface SavedPaper {
 interface SavedPapersPanelProps {
     open: boolean;
     onClose: () => void;
+    refreshKey?: number;
 }
 
-export default function SavedPapersPanel({ open, onClose }: SavedPapersPanelProps) {
+export default function SavedPapersPanel({ open, onClose, refreshKey = 0 }: SavedPapersPanelProps) {
     const { theme } = useTheme();
     const isDark = theme === "dark";
     const { data: session } = useSession();
@@ -38,7 +39,7 @@ export default function SavedPapersPanel({ open, onClose }: SavedPapersPanelProp
 
     useEffect(() => {
         if (open && session?.user) fetchPapers();
-    }, [open, session?.user, fetchPapers]);
+    }, [open, session?.user, refreshKey, fetchPapers]);
 
     const removePaper = async (paperId: string) => {
         try {

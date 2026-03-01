@@ -446,9 +446,9 @@ async function fetchNeo4jGraph(
         title: n.metadata?.title || n.label || "Untitled",
         year: n.metadata?.publication_year ?? null,
         citations: n.metadata?.cited_by_count ?? 0,
-        fields: n.metadata?.domain ? [n.metadata.domain] : [],
+        fields: n.metadata?.field ? [n.metadata.field] : [],
         abstract: n.metadata?.keywords?.join(", ") || "",
-        color: fieldColor(n.metadata?.domain ? [n.metadata.domain] : []),
+        color: fieldColor(n.metadata?.field ? [n.metadata.field] : []),
         isPrimary: true,
     }));
     const links: GraphLink[] = (data.edges || []).map((e: any) => ({
@@ -782,6 +782,7 @@ export default function PaperGraph() {
     const [minCitations, setMinCitations] = useState(0);
     const [aiOpen, setAiOpen] = useState(false);
     const [savedOpen, setSavedOpen] = useState(false);
+    const [savedRefreshKey, setSavedRefreshKey] = useState(0);
     const { data: session } = useSession();
 
     // Set real window size on mount (avoids SSR mismatch)
@@ -893,6 +894,7 @@ export default function PaperGraph() {
                 }),
             });
             if (res.ok) {
+                setSavedRefreshKey((prev) => prev + 1);
                 setSavedOpen(true);
             }
         } catch (err) {
@@ -1594,7 +1596,11 @@ export default function PaperGraph() {
             />
 
             {/* Saved Papers Panel */}
-            <SavedPapersPanel open={savedOpen} onClose={() => setSavedOpen(false)} />
+            <SavedPapersPanel
+                open={savedOpen}
+                onClose={() => setSavedOpen(false)}
+                refreshKey={savedRefreshKey}
+            />
         </div>
     );
 }
