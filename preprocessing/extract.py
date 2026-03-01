@@ -172,7 +172,7 @@ with driver.session() as session:
     session.run("""
         MATCH (a:Paper), (b:Paper)
         WHERE a <> b
-        AND ANY(author IN a.authors WHERE author IN b.authors)
+        AND ANY(author IN a.authorships WHERE author IN b.authorships)
         MERGE (a)-[:SHARES_AUTHOR]->(b)
     """)
     print("Creating SHARES_DOMAIN edges...")
