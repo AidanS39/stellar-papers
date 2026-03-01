@@ -60,6 +60,8 @@ export async function GET(req: NextRequest) {
     const nodeCypher = `
       MATCH (p:Paper)
       ${whereClause}
+      WITH p
+      ORDER BY p.cited_by_count DESC
       RETURN p
       LIMIT $limit
     `;
@@ -81,6 +83,7 @@ export async function GET(req: NextRequest) {
     const edgeRecords = await runQuery(edgeCypher, {
       nodeIds: Array.from(nodeIds),
     });
+
 
     const edges: GraphEdge[] = edgeRecords.map((record) => ({
       source: record.source,
