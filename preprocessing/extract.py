@@ -6,7 +6,12 @@ from neo4j import GraphDatabase
 
 load_dotenv()
 
-driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", os.environ["NEO4J_PASSWORD"]))
+db_url      = os.environ["NEO4J_URI"]
+db_username = os.environ["NEO4J_USER"]
+db_password = os.environ["NEO4J_PASSWORD"]
+
+
+driver = GraphDatabase.driver(db_url, auth=(db_username, db_password))
 
 file_name = "sample.gz"
 
@@ -55,6 +60,7 @@ with driver.session() as session:
             i += 1
             if i % 10 == 0:
                 print(f"{(i/line_count)*100}% complete.")
+            
 
     print("===============================================")
     print("Works imported successfully. Importing edges...")
