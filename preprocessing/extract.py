@@ -126,8 +126,10 @@ with driver.session() as session:
         #     """, papers=papers_batch)
 
     print("===============================================")
-    print("Works imported successfully. Importing edges...")
+    print("Works imported successfully. Importing/Creating edges...")
     print("===============================================")
+
+    print("Importing CITED edges...")
     with gzip.open(file_name, "rt") as f:
         i = 0
         edges_batch = []
@@ -166,6 +168,27 @@ with driver.session() as session:
             #         MATCH (b:Paper {id: edge.target})
             #         MERGE (a)-[:CITES]->(b)
             #     """, edges=edges_batch)
+    print("Creating SHARES_AUTHOR edges...")
+    session.run("""
+        MATCH (a:Paper), (b:Paper)
+        WHERE a <> b
+        AND ANY(author IN a.authors WHERE author IN b.authors)
+        MERGE (a)-[:SHARES_AUTHOR]->(b)
+    """)
+    print("Creating SHARES_DOMAIN edges...")
+    session.run("""
+        MATCH (a:Paper), (b:Paper)
+        WHERE a <> b
+        AND a.domain = b.domain
+        AND a.domain IS NOT NULL
+        MERGE (a)-[:SHARES_DOMAIN]->(b)
+    """)
+    print("Creating CO_CITED edges...")
+    session.run("""
+        MATCH (a:Paper)<-[:CITES]-(c:Paper)-[:CITES]->(b:Paper)
+        WHERE a <> b
+        MERGE (a)-[:CO_CITED]->(b)
+    """)
 
     print("===============================================")
     print("Edges imported successfully.")
