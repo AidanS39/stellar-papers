@@ -61,7 +61,7 @@ export default function AiChatPanel({ open, onClose, graphContext }: AiChatPanel
                     const updated = [...prev];
                     updated[updated.length - 1] = {
                         role: "ai",
-                        content: `⚠️ Error: ${err.error || "Failed to get response"}`,
+                        content: "I'm sorry, I am unable to respond.",
                     };
                     return updated;
                 });
@@ -90,7 +90,7 @@ export default function AiChatPanel({ open, onClose, graphContext }: AiChatPanel
                 const updated = [...prev];
                 updated[updated.length - 1] = {
                     role: "ai",
-                    content: `⚠️ Error: ${err.message || "Network error"}`,
+                    content: "I'm sorry, I am unable to respond.",
                 };
                 return updated;
             });
