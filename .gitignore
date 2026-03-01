@@ -43,3 +43,7 @@ next-env.d.ts
 *test*
 
 *.yaml
+*.venv
+
+sample.gz
+manifest.json
