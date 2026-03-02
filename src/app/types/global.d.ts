@@ -1,4 +1,3 @@
-// Type shim for react-force-graph-2d (bundled types may lag behind)
 declare module "react-force-graph-2d" {
     import { Component } from "react";
 
@@ -7,7 +6,11 @@ declare module "react-force-graph-2d" {
         width?: number;
         height?: number;
         backgroundColor?: string;
-        nodeCanvasObject?: (node: object, ctx: CanvasRenderingContext2D, globalScale: number) => void;
+        nodeCanvasObject?: (
+            node: object,
+            ctx: CanvasRenderingContext2D,
+            globalScale: number,
+        ) => void;
         nodeCanvasObjectMode?: (node: object) => string;
         linkCanvasObject?: (link: object, ctx: CanvasRenderingContext2D) => void;
         linkCanvasObjectMode?: (link: object) => string;
@@ -29,7 +32,6 @@ declare module "react-force-graph-2d" {
 }
 
 declare module "d3-force" {
-    // This allows you to use the functions without TS errors
     export function forceCollide(radius?: number | ((node: any) => number)): any;
     export function forceLink(links?: any[]): any;
     export function forceManyBody(): any;

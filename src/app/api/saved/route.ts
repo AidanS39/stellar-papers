@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../lib/authOptions";
 import { getDb } from "../../../lib/db";
 
-// GET /api/saved
-// returns alls saved papers for the logged in user
-// no body is needed only the valid session cookie
-
 export async function GET() {
     const session = await auth();
 
@@ -27,9 +23,6 @@ export async function GET() {
         return NextResponse.json({ error: "Failed to fetch saved papers" }, { status: 500 });
     }
 }
-
-//POST /api/saved
-// saves a paper to the logged in user's collection
 
 export async function POST(req: NextRequest) {
     const session = await auth();
