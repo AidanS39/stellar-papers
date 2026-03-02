@@ -1,8 +1,3 @@
-// Run this file in a MongoDB shell or use it as a reference for your collection structures.
-// To apply validation, use db.runCommand() with the "collMod" operator on existing collections,
-// or "create" operator for new collections.
-
-// 1. Users Collection
 db.createCollection("users", {
     validator: {
         $jsonSchema: {
@@ -45,11 +40,9 @@ db.createCollection("users", {
     },
 });
 
-// Create a unique index for email and handle
 db.users.createIndex({ email: 1 }, { unique: true });
 db.users.createIndex({ username: 1 }, { unique: true });
 
-// 2. Saved Papers Collection
 db.createCollection("saved_papers", {
     validator: {
         $jsonSchema: {
@@ -75,5 +68,4 @@ db.createCollection("saved_papers", {
     },
 });
 
-// A user shouldn't save the same paper twice
 db.saved_papers.createIndex({ userId: 1, paperId: 1 }, { unique: true });

@@ -38,14 +38,7 @@ export default clientPromise;
 
 export async function ensureIndexes(): Promise<void> {
     const db = await getDb();
-    // this is compounding the index between the user id of the specified user
-    // and the specified paperId within the saved folder for the user
-    // ensures fast lookup times and prevents duplicates within mongodb
     await db.collection("saved_papers").createIndex({ userId: 1, paperId: 1 }, { unique: true });
-    // index solely on userId alone for fetching the user's saved "saved_papers"
     await db.collection("saved_papers").createIndex({ userId: 1 });
-    // indexing at the savedAt for sorting by the most recently saved
     await db.collection("saved_papers").createIndex({ savedAt: -1 });
-
-    console.log("MongoDB indexes ensured!");
 }

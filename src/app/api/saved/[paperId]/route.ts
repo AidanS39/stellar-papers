@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../../lib/authOptions";
 import { getDb } from "../../../../lib/db";
 
-// DELETE /api/saved/[paperId]
-// Removes a saved paper from the logged in user's collection
-// paperId in the url must be url encoded since its an open alex api
-
 export async function DELETE(
     req: NextRequest,
     { params }: { params: Promise<{ paperId: string }> },

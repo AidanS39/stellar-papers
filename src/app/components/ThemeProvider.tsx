@@ -25,7 +25,6 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         if (stored === "light" || stored === "dark") {
             setTheme(stored);
         } else {
-            // Default to dark
             setTheme("dark");
         }
         setMounted(true);
@@ -46,7 +45,6 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         setTheme((prev) => (prev === "dark" ? "light" : "dark"));
     };
 
-    // Prevent flash of wrong theme
     if (!mounted) {
         return <>{children}</>;
     }

@@ -29,7 +29,6 @@ export async function POST(request: Request) {
         const db = await getDb();
         const usersCol = db.collection("users");
 
-        // Check for existing handle or email
         const existing = await usersCol.findOne({
             $or: [{ email }, { username }],
         });

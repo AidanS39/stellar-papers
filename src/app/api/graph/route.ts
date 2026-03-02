@@ -3,6 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { runQuery } from "../../../lib/neo4j";
 import { toNode } from "../../../lib/transform";
 import { GraphFilters, GraphResponse, GraphEdge } from "../../../types/graph";
+import { LRUCache } from "lru-cache";
+
+const graphCache = new LRUCache<string, GraphResponse>({
+    max: 100,
+    ttl: 1000 * 60 * 60,
+});
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -22,14 +28,24 @@ export async function GET(req: NextRequest) {
     };
 
     try {
+        const cacheKey = JSON.stringify(filters);
+        const cachedResponse = graphCache.get(cacheKey);
+        if (cachedResponse) {
+            return NextResponse.json(cachedResponse, {
+                headers: {
+                    "X-Cache": "HIT",
+                },
+            });
+        }
+
         const conditions: string[] = [];
         const params: Record<string, any> = {
             limit: neo4j.int(filters.limit ?? 100),
         };
 
         if (filters.author) {
-            conditions.push("ANY(a IN p.authorships WHERE toLower(a) CONTAINS toLower($author))");
-            params.author = filters.author;
+            conditions.push("ANY(a IN p.authorships WHERE a =~ $authorRegex)");
+            params.authorRegex = `(?i).*${filters.author}.*`;
         }
         if (filters.publication_year_start) {
             conditions.push("p.publication_year >= $publication_year_start");
@@ -40,49 +56,63 @@ export async function GET(req: NextRequest) {
             params.publication_year_end = filters.publication_year_end;
         }
         if (filters.field) {
-            conditions.push("toLower(p.field) CONTAINS toLower($field)");
-            params.field = filters.field;
+            conditions.push("p.field =~ $fieldRegex");
+            params.fieldRegex = `(?i).*${filters.field}.*`;
         }
         if (filters.keyword) {
-            conditions.push("ANY(k IN p.keywords WHERE toLower(k) CONTAINS toLower($keyword))");
-            params.keyword = filters.keyword;
+            conditions.push("ANY(k IN p.keywords WHERE k =~ $keywordRegex)");
+            params.keywordRegex = `(?i).*${filters.keyword}.*`;
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-        const nodeCypher = `
+        const cypherQuery = `
       MATCH (p:Paper)
       ${whereClause}
       WITH p
       ORDER BY p.cited_by_count DESC
-      RETURN p
       LIMIT $limit
+      WITH collect(p) AS topNodes
+      UNWIND topNodes AS node
+      
+      OPTIONAL MATCH (node)-[r:CITES]->(target:Paper)
+      WHERE target IN topNodes
+      
+      RETURN 
+        node AS p,
+        collect({source: node.id, target: target.id, type: type(r)}) AS edges
     `;
 
-        const nodeRecords = await runQuery(nodeCypher, params);
+        const records = await runQuery(cypherQuery, params);
+
         const nodeIds = new Set<string>();
-        const nodes = nodeRecords.map((record) => {
-            const node = toNode(record.p.properties);
-            nodeIds.add(node.id);
-            return node;
-        });
+        const nodes: any[] = [];
+        const edges: GraphEdge[] = [];
 
-        const edgeCypher = `
-      MATCH (a:Paper)-[r:CITES]->(b:Paper)
-      WHERE a.id IN $nodeIds AND b.id IN $nodeIds
-      RETURN a.id AS source, b.id AS target, type(r) AS rel_type
-    `;
+        for (const record of records) {
+            const p = record.p;
+            if (!p) continue;
 
-        const edgeRecords = await runQuery(edgeCypher, {
-            nodeIds: Array.from(nodeIds),
-        });
+            const node = toNode(p.properties);
 
-        const edges: GraphEdge[] = edgeRecords.map((record) => ({
-            source: record.source,
-            target: record.target,
-            type: "cites",
-            weight: 1,
-        }));
+            if (!nodeIds.has(node.id)) {
+                nodeIds.add(node.id);
+                nodes.push(node);
+            }
+
+            if (record.edges) {
+                for (const edge of record.edges) {
+                    if (edge.source && edge.target) {
+                        edges.push({
+                            source: edge.source,
+                            target: edge.target,
+                            type: edge.type || "cites",
+                            weight: 1,
+                        });
+                    }
+                }
+            }
+        }
 
         const response: GraphResponse = {
             nodes,
@@ -94,7 +124,13 @@ export async function GET(req: NextRequest) {
             },
         };
 
-        return NextResponse.json(response);
+        graphCache.set(cacheKey, response);
+
+        return NextResponse.json(response, {
+            headers: {
+                "X-Cache": "MISS",
+            },
+        });
     } catch (error) {
         console.error("Graph API error:", error);
         return NextResponse.json({ error: "Failed to fetch graph data" }, { status: 500 });

@@ -9,6 +9,8 @@ interface SavedPaper {
     paperId: string;
     title: string;
     savedAt: string;
+    field?: string;
+    open_alex_id?: string;
 }
 
 interface SavedPapersPanelProps {
@@ -71,7 +73,6 @@ export default function SavedPapersPanel({ open, onClose, refreshKey = 0 }: Save
                 backdropFilter: "blur(12px)",
             }}
         >
-            {/* Header */}
             <div
                 style={{
                     padding: "16px 20px",
@@ -121,7 +122,6 @@ export default function SavedPapersPanel({ open, onClose, refreshKey = 0 }: Save
                 </button>
             </div>
 
-            {/* Content */}
             <div
                 style={{
                     flex: 1,
@@ -211,6 +211,39 @@ export default function SavedPapersPanel({ open, onClose, refreshKey = 0 }: Save
                             >
                                 {paper.title}
                             </div>
+                            {paper.field && (
+                                <div
+                                    style={{
+                                        fontSize: 10,
+                                        color: isDark
+                                            ? "rgba(79,195,247,0.8)"
+                                            : "rgba(2,132,199,0.8)",
+                                        marginBottom: 4,
+                                    }}
+                                >
+                                    Topic: {paper.field}
+                                </div>
+                            )}
+                            {paper.open_alex_id && (
+                                <a
+                                    href={
+                                        paper.open_alex_id.startsWith("http")
+                                            ? paper.open_alex_id
+                                            : `https://openalex.org/${paper.open_alex_id}`
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        fontSize: 10,
+                                        color: isDark ? "#a78bfa" : "#7c3aed",
+                                        textDecoration: "underline",
+                                        display: "inline-block",
+                                        marginBottom: 4,
+                                    }}
+                                >
+                                    Open Link
+                                </a>
+                            )}
                             <div
                                 style={{
                                     fontSize: 9,

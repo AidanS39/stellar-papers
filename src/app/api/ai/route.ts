@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
-        // Build context from graph data
         let contextBlock = "";
         if (graphContext) {
             const { nodes, links, fields } = graphContext;
@@ -58,7 +57,6 @@ Connections: ${(links || [])
 
         const result = await model.generateContentStream(fullPrompt);
 
-        // Create a ReadableStream that forwards Gemini's chunks
         const stream = new ReadableStream({
             async start(controller) {
                 try {

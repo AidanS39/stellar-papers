@@ -45,7 +45,6 @@ export default function AiChatPanel({ open, onClose, graphContext }: AiChatPanel
         setInput("");
         setStreaming(true);
 
-        // Add empty AI message that we'll stream into
         setMessages((prev) => [...prev, { role: "ai", content: "" }]);
 
         try {
@@ -125,7 +124,6 @@ export default function AiChatPanel({ open, onClose, graphContext }: AiChatPanel
                 backdropFilter: "blur(12px)",
             }}
         >
-            {/* Header */}
             <div
                 style={{
                     padding: "16px 20px",
@@ -164,7 +162,6 @@ export default function AiChatPanel({ open, onClose, graphContext }: AiChatPanel
                 </button>
             </div>
 
-            {/* Messages */}
             <div
                 style={{
                     flex: 1,
@@ -277,7 +274,6 @@ export default function AiChatPanel({ open, onClose, graphContext }: AiChatPanel
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
             <div
                 style={{
                     padding: "12px 16px",

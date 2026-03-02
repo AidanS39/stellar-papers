@@ -24,14 +24,8 @@ const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
     ),
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONFIG
-// ─────────────────────────────────────────────────────────────────────────────
-const USE_MOCK = false; //Determines if using mock data or not
+const USE_MOCK = false;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TYPES
-// ─────────────────────────────────────────────────────────────────────────────
 interface Paper {
     paperId: string;
     title: string;
@@ -59,7 +53,6 @@ interface GraphNode {
     color: string;
     isPrimary: boolean;
     degree?: number;
-    // injected by force-graph at runtime
     x?: number;
     y?: number;
 }
@@ -79,9 +72,6 @@ interface MockRef {
     targets: string[];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COLORS
-// ─────────────────────────────────────────────────────────────────────────────
 const FIELD_COLORS: Record<string, string> = {
     "Computer Science": "#4fc3f7",
     Mathematics: "#a78bfa",
@@ -101,7 +91,6 @@ const FIELD_COLORS: Record<string, string> = {
     "Environmental Science": "#4ade80",
 };
 
-// Vibrant palette to assign to any newly encountered fields
 const DYNAMIC_PALETTE = [
     "#ef4444",
     "#f97316",
@@ -133,7 +122,6 @@ function fieldColor(fields: string[]): string {
     );
     if (matchKey) return FIELD_COLORS[matchKey];
 
-    // Dynamically assign a color from the palette if we haven't seen this field before
     const normalizedDynamic = primaryField.toLowerCase();
     if (!dynamicFieldColors.has(normalizedDynamic)) {
         const nextColor = DYNAMIC_PALETTE[dynamicFieldColors.size % DYNAMIC_PALETTE.length];
@@ -152,297 +140,36 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
     };
 }
 
-// Shared radius logic — sizes based on network degree instead of citations
 function getNodeRadius(degree: number, isHovered = false): number {
     const base = Math.max(3, Math.min(22, 2.5 + Math.sqrt(degree) * 1.8));
     return isHovered ? base * 1.5 : base;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA
-// ─────────────────────────────────────────────────────────────────────────────
-// const MOCK_PAPERS: Paper[] = [
-//     {
-//         paperId: "p1",
-//         title: "Attention Is All You Need",
-//         year: 2017,
-//         citationCount: 91000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "transformer self-attention sequence model architecture",
-//     },
-//     {
-//         paperId: "p2",
-//         title: "BERT: Pre-training of Deep Bidirectional Transformers",
-//         year: 2018,
-//         citationCount: 55000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "language model pre-training bert nlp bidirectional",
-//     },
-//     {
-//         paperId: "p3",
-//         title: "GPT-3: Language Models are Few-Shot Learners",
-//         year: 2020,
-//         citationCount: 30000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "large language model few-shot gpt autoregressive",
-//     },
-//     {
-//         paperId: "p4",
-//         title: "Deep Residual Learning for Image Recognition",
-//         year: 2015,
-//         citationCount: 120000,
-//         fieldsOfStudy: ["Computer Science", "Mathematics"],
-//         abstract: "resnet residual deep learning image classification skip connection",
-//     },
-//     {
-//         paperId: "p5",
-//         title: "Generative Adversarial Networks",
-//         year: 2014,
-//         citationCount: 45000,
-//         fieldsOfStudy: ["Computer Science", "Mathematics"],
-//         abstract: "GAN generative adversarial generator discriminator training",
-//     },
-//     {
-//         paperId: "p6",
-//         title: "Adam: A Method for Stochastic Optimization",
-//         year: 2014,
-//         citationCount: 100000,
-//         fieldsOfStudy: ["Mathematics", "Computer Science"],
-//         abstract: "adam optimizer gradient descent stochastic adaptive",
-//     },
-//     {
-//         paperId: "p7",
-//         title: "Dropout: Preventing Neural Network Overfitting",
-//         year: 2014,
-//         citationCount: 35000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "dropout regularization overfitting neural network training",
-//     },
-//     {
-//         paperId: "p8",
-//         title: "ImageNet Large Scale Visual Recognition Challenge",
-//         year: 2015,
-//         citationCount: 42000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "imagenet dataset image recognition benchmark classification",
-//     },
-//     {
-//         paperId: "p9",
-//         title: "Playing Atari with Deep Reinforcement Learning",
-//         year: 2013,
-//         citationCount: 18000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "deep Q-network reinforcement learning atari games DQN",
-//     },
-//     {
-//         paperId: "p10",
-//         title: "An Image is Worth 16x16 Words: Vision Transformers",
-//         year: 2020,
-//         citationCount: 22000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "vision transformer ViT image patches self-attention",
-//     },
-//     {
-//         paperId: "p11",
-//         title: "CLIP: Learning Transferable Visual Models From NLP",
-//         year: 2021,
-//         citationCount: 14000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "contrastive language image pretraining CLIP zero-shot",
-//     },
-//     {
-//         paperId: "p12",
-//         title: "Diffusion Models Beat GANs on Image Synthesis",
-//         year: 2021,
-//         citationCount: 8000,
-//         fieldsOfStudy: ["Computer Science", "Mathematics"],
-//         abstract: "diffusion probabilistic model image synthesis guidance",
-//     },
-//     {
-//         paperId: "p13",
-//         title: "Neural Ordinary Differential Equations",
-//         year: 2018,
-//         citationCount: 6500,
-//         fieldsOfStudy: ["Mathematics", "Computer Science"],
-//         abstract: "neural ODE continuous depth differential equations adjoint",
-//     },
-//     {
-//         paperId: "p14",
-//         title: "Denoising Diffusion Probabilistic Models",
-//         year: 2020,
-//         citationCount: 11000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "DDPM diffusion denoising score matching probabilistic",
-//     },
-//     {
-//         paperId: "p15",
-//         title: "Proximal Policy Optimization Algorithms",
-//         year: 2017,
-//         citationCount: 9800,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "PPO reinforcement learning policy gradient clipping",
-//     },
-//     {
-//         paperId: "p16",
-//         title: "Batch Normalization: Accelerating Deep Networks",
-//         year: 2015,
-//         citationCount: 48000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "batch normalization internal covariate shift accelerating",
-//     },
-//     {
-//         paperId: "p17",
-//         title: "LSTM: Long Short-Term Memory",
-//         year: 1997,
-//         citationCount: 70000,
-//         fieldsOfStudy: ["Computer Science", "Linguistics"],
-//         abstract: "LSTM recurrent network memory cell sequence long-term",
-//     },
-//     {
-//         paperId: "p18",
-//         title: "Word2Vec: Efficient Word Representations in Space",
-//         year: 2013,
-//         citationCount: 31000,
-//         fieldsOfStudy: ["Computer Science", "Linguistics"],
-//         abstract: "word2vec word embeddings skip-gram nlp distributed",
-//     },
-//     {
-//         paperId: "p19",
-//         title: "U-Net: CNNs for Biomedical Image Segmentation",
-//         year: 2015,
-//         citationCount: 40000,
-//         fieldsOfStudy: ["Computer Science", "Medicine"],
-//         abstract: "U-Net segmentation biomedical convolutional encoder decoder",
-//     },
-//     {
-//         paperId: "p20",
-//         title: "AlphaFold: Protein Structure Prediction",
-//         year: 2021,
-//         citationCount: 12000,
-//         fieldsOfStudy: ["Biology", "Computer Science"],
-//         abstract: "AlphaFold protein folding structure prediction biology",
-//     },
-//     {
-//         paperId: "r1",
-//         title: "The Transformer: A Novel Neural Network Architecture",
-//         year: 2017,
-//         citationCount: 5000,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "transformer neural network architecture encoder decoder",
-//     },
-//     {
-//         paperId: "r2",
-//         title: "Layer Normalization",
-//         year: 2016,
-//         citationCount: 14000,
-//         fieldsOfStudy: ["Computer Science", "Mathematics"],
-//         abstract: "layer normalization training stabilization",
-//     },
-//     {
-//         paperId: "r3",
-//         title: "Multi-Head Attention Mechanisms",
-//         year: 2016,
-//         citationCount: 3200,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "multi-head attention self-attention heads parallel",
-//     },
-//     {
-//         paperId: "r4",
-//         title: "Positional Encoding in Sequence Models",
-//         year: 2017,
-//         citationCount: 2100,
-//         fieldsOfStudy: ["Computer Science", "Mathematics"],
-//         abstract: "positional encoding sinusoidal sequence position embedding",
-//     },
-//     {
-//         paperId: "r5",
-//         title: "Scaling Laws for Neural Language Models",
-//         year: 2020,
-//         citationCount: 4500,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "scaling laws compute parameters data neural language models",
-//     },
-//     {
-//         paperId: "r6",
-//         title: "Self-Supervised Learning of Visual Features",
-//         year: 2019,
-//         citationCount: 3800,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "self-supervised visual representation learning pretext",
-//     },
-//     {
-//         paperId: "r7",
-//         title: "Contrastive Learning of Visual Representations",
-//         year: 2020,
-//         citationCount: 6700,
-//         fieldsOfStudy: ["Computer Science"],
-//         abstract: "contrastive learning SimCLR visual representations augmentation",
-//     },
-//     {
-//         paperId: "r8",
-//         title: "Graph Neural Networks: A Review of Methods",
-//         year: 2018,
-//         citationCount: 8900,
-//         fieldsOfStudy: ["Computer Science", "Mathematics"],
-//         abstract: "GNN graph neural network review survey methods",
-//     },
-//     {
-//         paperId: "r9",
-//         title: "Variational Autoencoders for Generative Modeling",
-//         year: 2013,
-//         citationCount: 20000,
-//         fieldsOfStudy: ["Computer Science", "Mathematics"],
-//         abstract: "VAE variational autoencoder latent space generative model",
-//     },
-//     {
-//         paperId: "r10",
-//         title: "Score-Based Generative Modeling Through SDEs",
-//         year: 2020,
-//         citationCount: 4200,
-//         fieldsOfStudy: ["Mathematics", "Computer Science"],
-//         abstract: "score matching SDE diffusion stochastic differential equations",
-//     },
-// ];
-//
-// const MOCK_REFS: MockRef[] = [
-//     { sourceId: "p1", targets: ["r1", "r2", "r3", "r4", "p6", "p17"] },
-//     { sourceId: "p2", targets: ["p1", "r2", "p18", "p17", "p6"] },
-//     { sourceId: "p3", targets: ["p1", "p2", "p6", "r5"] },
-//     { sourceId: "p4", targets: ["p8", "p16", "p6"] },
-//     { sourceId: "p5", targets: ["r9", "p6", "p7"] },
-//     { sourceId: "p10", targets: ["p1", "p4", "p8", "r6"] },
-//     { sourceId: "p11", targets: ["p1", "p10", "r6", "r7"] },
-//     { sourceId: "p12", targets: ["p5", "r9", "r10", "p14"] },
-//     { sourceId: "p14", targets: ["r9", "r10", "p6"] },
-//     { sourceId: "p13", targets: ["p6", "r2", "r9"] },
-//     { sourceId: "p15", targets: ["p9", "p6"] },
-//     { sourceId: "p16", targets: ["p4", "p6"] },
-//     { sourceId: "p19", targets: ["p4", "p16", "p7"] },
-//     { sourceId: "p20", targets: ["p19", "p4"] },
-//     { sourceId: "p18", targets: ["p17", "r4"] },
-//     { sourceId: "r5", targets: ["p3", "p2", "p1"] },
-//     { sourceId: "r7", targets: ["r6", "p11"] },
-//     { sourceId: "r8", targets: ["p1", "p4"] },
-// ];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// DATA LAYER
-// ─────────────────────────────────────────────────────────────────────────────
 async function fetchGraph(
     query: string,
     maxNodes: number,
     minYear: number,
+    maxYear: number,
     minCitations: number,
     authorFilter: string,
     fieldFilter: string,
 ): Promise<GraphData> {
-    return fetchNeo4jGraph(query, maxNodes, minYear, minCitations, authorFilter, fieldFilter);
+    return fetchNeo4jGraph(
+        query,
+        maxNodes,
+        minYear,
+        maxYear,
+        minCitations,
+        authorFilter,
+        fieldFilter,
+    );
 }
 
 async function fetchNeo4jGraph(
     query: string,
     maxNodes: number,
     minYear: number,
+    maxYear: number,
     minCitations: number,
     authorFilter: string,
     fieldFilter: string,
@@ -452,6 +179,7 @@ async function fetchNeo4jGraph(
     });
     if (query.trim()) params.set("keyword", query.trim());
     if (minYear > 0) params.set("publication_year_start", String(minYear));
+    if (maxYear > 0) params.set("publication_year_end", String(maxYear));
     if (authorFilter.trim()) params.set("author", authorFilter.trim());
     if (fieldFilter.trim()) params.set("field", fieldFilter.trim());
     const res = await fetch(`/api/graph?${params}`);
@@ -460,7 +188,7 @@ async function fetchNeo4jGraph(
         throw new Error((err as { error: string }).error || `Server error ${res.status}`);
     }
     const data = await res.json();
-    // Transform PaperNode[] + GraphEdge[] → GraphData
+
     const nodes: GraphNode[] = (data.nodes || []).map((n: any) => ({
         id: n.id,
         title: n.metadata?.title || n.label || "Untitled",
@@ -528,9 +256,6 @@ function buildGraph(primaries: Paper[], allRefs: MockRef[], allPapers: Paper[]):
     return { nodes: Array.from(nodeMap.values()), links };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STARFIELD
-// ─────────────────────────────────────────────────────────────────────────────
 interface StarFieldProps {
     width: number;
     height: number;
@@ -650,7 +375,6 @@ function StarField({ width, height }: StarFieldProps) {
         });
         const shooters: Shooter[] = Array.from({ length: 4 }, makeShooter);
 
-        // Pre-render nebulae to offscreen canvas
         const offscreen = document.createElement("canvas");
         offscreen.width = width;
         offscreen.height = height;
@@ -726,9 +450,6 @@ function StarField({ width, height }: StarFieldProps) {
     );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
 export default function PaperGraph() {
     const containerRef = useRef<HTMLDivElement>(null);
     const hoveredRef = useRef<GraphNode | null>(null);
@@ -737,7 +458,6 @@ export default function PaperGraph() {
     const { theme } = useTheme();
     const isDark = theme === "dark";
 
-    // Theme-dependent color palette
     const t = useMemo(
         () =>
             isDark
@@ -800,7 +520,6 @@ export default function PaperGraph() {
             : "Connected to Neo4j — enter a topic to explore",
     );
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
-    // Pre-calculate adjacency lists when graph data changes for fast neighbour lookups
     const adjacencyList = useMemo(() => {
         const adj = new Map<string, Set<string>>();
         graphData.nodes.forEach((n) => adj.set(n.id, new Set()));
@@ -811,7 +530,6 @@ export default function PaperGraph() {
             adj.get(targetId)?.add(sourceId);
         });
 
-        // Attach degree to nodes for sizing
         graphData.nodes.forEach((n) => {
             n.degree = adj.get(n.id)?.size || 0;
         });
@@ -823,8 +541,9 @@ export default function PaperGraph() {
     const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [fieldsPresent, setFieldsPresent] = useState<string[]>([]);
-    const [maxNodes, setMaxNodes] = useState(50);
+    const [maxNodes, setMaxNodes] = useState(2000);
     const [minYear, setMinYear] = useState(1980);
+    const [maxYear, setMaxYear] = useState(2024);
     const [minCitations, setMinCitations] = useState(0);
     const [authorFilter, setAuthorFilter] = useState("");
     const [fieldFilter, setFieldFilter] = useState("");
@@ -833,7 +552,6 @@ export default function PaperGraph() {
     const [savedRefreshKey, setSavedRefreshKey] = useState(0);
     const { data: session } = useSession();
 
-    // Set real window size on mount (avoids SSR mismatch)
     useEffect(() => {
         setDims({ w: window.innerWidth, h: window.innerHeight });
         const obs = new ResizeObserver((entries) => {
@@ -844,13 +562,11 @@ export default function PaperGraph() {
         return () => obs.disconnect();
     }, []);
 
-    // ── Color-clustering force ──────────────────────────────────────────────
-    // Same color → attract (like a spring), different color → repel (short-range)
     useEffect(() => {
         if (!fgRef.current || graphData.nodes.length === 0) return;
 
         const ATTRACT_STRENGTH = 0.005;
-        const REPEL_STRENGTH = 1.5; // was 2.85
+        const REPEL_STRENGTH = 1.5;
         const REPEL_RADIUS = 100;
 
         function colorClusterForce(alpha: number) {
@@ -867,30 +583,27 @@ export default function PaperGraph() {
                     const nx = dx / dist;
                     const ny = dy / dist;
 
-                    // ── Collision: push apart if nodes overlap ──────────────
                     const minDist =
                         getNodeRadius(a.degree ?? 0, false) +
                         getNodeRadius(b.degree ?? 0, false) +
-                        2; // 2px gap
+                        2;
                     if (dist < minDist) {
-                        const overlap = ((minDist - dist) / dist) * 1.2; // was 0.5
+                        const overlap = ((minDist - dist) / dist) * 1.2;
                         a.vx = (a.vx ?? 0) - nx * overlap;
                         a.vy = (a.vy ?? 0) - ny * overlap;
                         b.vx = (b.vx ?? 0) + nx * overlap;
                         b.vy = (b.vy ?? 0) + ny * overlap;
-                        continue; // skip clustering force while overlapping
+                        continue;
                     }
 
                     let fx = 0;
                     let fy = 0;
 
                     if (a.color === b.color) {
-                        // Spring attraction — scales with distance so clusters pull tight
                         const pull = ATTRACT_STRENGTH * alpha * (dist / 200);
                         fx = nx * pull;
                         fy = ny * pull;
                     } else if (dist < REPEL_RADIUS) {
-                        // Short-range repulsion — strongest when very close
                         const push =
                             REPEL_STRENGTH * alpha * ((REPEL_RADIUS - dist) / REPEL_RADIUS);
                         fx = -nx * push;
@@ -907,7 +620,6 @@ export default function PaperGraph() {
 
         fgRef.current.d3Force("color-clustering", colorClusterForce);
 
-        // Remove any leftover collision force from a previous render
         fgRef.current.d3Force("collision", null);
 
         fgRef.current.d3ReheatSimulation();
@@ -965,6 +677,7 @@ export default function PaperGraph() {
                 query,
                 maxNodes,
                 minYear,
+                maxYear,
                 minCitations,
                 authorFilter,
                 fieldFilter,
@@ -978,22 +691,20 @@ export default function PaperGraph() {
             setFieldsPresent(fields);
             setTimeout(() => {
                 setGraphData(data);
-                setStatus(`${data.nodes.length} nodes · ${data.links.length} connections`);
+                setStatus(`${data.nodes.length} papers · ${data.links.length} connections`);
                 setLoading(false);
             }, 60);
         } catch (e) {
             setStatus(`Error: ${(e as Error).message}`);
             setLoading(false);
         }
-    }, [query, maxNodes, minYear, minCitations, authorFilter, fieldFilter, loading]);
+    }, [query, maxNodes, minYear, maxYear, minCitations, authorFilter, fieldFilter, loading]);
 
-    // Auto-load papers on mount
     useEffect(() => {
         runSearch();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // ── Canvas draw callbacks ───────────────────────────────────────────────
     const drawNode = useCallback(
         (node: object, ctx: CanvasRenderingContext2D, globalScale: number) => {
             try {
@@ -1007,7 +718,6 @@ export default function PaperGraph() {
                     isConnectedToSelected = adjacencyList.get(selectedNode.id)?.has(n.id) || false;
                 }
 
-                // If a node is selected, dim nodes that are neither selected nor connected
                 const opacity = selectedNode && !isSelected && !isConnectedToSelected ? 0.2 : 1;
                 const radius = getNodeRadius(n.degree ?? 0, isHov || isSelected);
                 const { r, g, b } = hexToRgb(color);
@@ -1034,12 +744,10 @@ export default function PaperGraph() {
                 ctx.fillStyle = gradient;
                 ctx.fill();
 
-                // Subtle border for definition
                 ctx.lineWidth = 0.5 * (isSelected ? 2 : 1);
                 ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
                 ctx.stroke();
 
-                // Selected node label is drawn independently so it sits explicitly above the canvas elements
                 if (isSelected) return;
             } catch (_) {
                 /* swallow */
@@ -1048,7 +756,6 @@ export default function PaperGraph() {
         [adjacencyList, selectedNode],
     );
 
-    // Pixel-perfect hover hit area — matches exactly what drawNode renders
     const paintNodePointerArea = useCallback(
         (node: object, color: string, ctx: CanvasRenderingContext2D) => {
             const n = node as GraphNode;
@@ -1074,7 +781,6 @@ export default function PaperGraph() {
                 const snId = selectedNode?.id;
                 const isConnectedToSelected = snId && (s.id === snId || t.id === snId);
 
-                // If a node is selected, fade out links not connected to it
                 const opacity = snId && !isConnectedToSelected ? 0.05 : 0.22;
                 const highlightMultiplier = isConnectedToSelected ? 2.5 : 1;
                 const lineWidth = 0.7 * highlightMultiplier;
@@ -1093,10 +799,10 @@ export default function PaperGraph() {
         [selectedNode],
     );
 
-    // ── Slider config ───────────────────────────────────────────────────────
     const sliders = [
-        { label: "Max Nodes", val: maxNodes, set: setMaxNodes, min: 1, max: 5000, step: 1 },
+        { label: "Max Papers", val: maxNodes, set: setMaxNodes, min: 1, max: 2000, step: 1 },
         { label: "Min Year", val: minYear, set: setMinYear, min: 1900, max: 2024, step: 1 },
+        { label: "Max Year", val: maxYear, set: setMaxYear, min: 1900, max: 2024, step: 1 },
         {
             label: "Min Citations",
             val: minCitations,
@@ -1107,7 +813,6 @@ export default function PaperGraph() {
         },
     ] as const;
 
-    // ── Render ──────────────────────────────────────────────────────────────
     return (
         <div
             ref={containerRef}
@@ -1122,7 +827,6 @@ export default function PaperGraph() {
         >
             {isDark && <StarField width={dims.w} height={dims.h} />}
 
-            {/* Header Icons */}
             <div
                 style={{
                     position: "absolute",
@@ -1134,50 +838,72 @@ export default function PaperGraph() {
                     gap: 8,
                 }}
             >
-                {session?.user && (
-                    <button
-                        onClick={() => setSavedOpen(!savedOpen)}
-                        title="Saved Papers"
-                        style={{
-                            height: "36px",
-                            padding: "0 10px",
-                            borderRadius: 8,
-                            border: `1px solid ${isDark ? "rgba(79,195,247,0.3)" : "rgba(2,132,199,0.25)"}`,
-                            background: savedOpen
-                                ? isDark
-                                    ? "rgba(79,195,247,0.2)"
-                                    : "rgba(2,132,199,0.15)"
-                                : isDark
-                                  ? "rgba(79,195,247,0.08)"
-                                  : "rgba(2,132,199,0.05)",
-                            color: isDark ? "#4fc3f7" : "#0284c7",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 5,
-                        }}
-                    >
-                        <HiBookmark size={18} />
-                    </button>
-                )}
                 <button
-                    onClick={() => setAiOpen(!aiOpen)}
-                    title="AI Analyst"
+                    onClick={() => setSavedOpen(!savedOpen)}
+                    title={session?.user ? "Saved Papers" : "Sign in to use bookmarks"}
+                    disabled={!session?.user}
                     style={{
                         height: "36px",
                         padding: "0 10px",
                         borderRadius: 8,
-                        border: `1px solid ${isDark ? "rgba(79,195,247,0.3)" : "rgba(2,132,199,0.25)"}`,
-                        background: aiOpen
+                        border: `1px solid ${session?.user ? (isDark ? "rgba(79,195,247,0.3)" : "rgba(2,132,199,0.25)") : isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+                        background: !session?.user
                             ? isDark
-                                ? "rgba(79,195,247,0.2)"
-                                : "rgba(2,132,199,0.15)"
+                                ? "rgba(255,255,255,0.05)"
+                                : "rgba(0,0,0,0.05)"
+                            : savedOpen
+                              ? isDark
+                                  ? "rgba(79,195,247,0.2)"
+                                  : "rgba(2,132,199,0.15)"
+                              : isDark
+                                ? "rgba(79,195,247,0.08)"
+                                : "rgba(2,132,199,0.05)",
+                        color: session?.user
+                            ? isDark
+                                ? "#4fc3f7"
+                                : "#0284c7"
                             : isDark
-                              ? "rgba(79,195,247,0.08)"
-                              : "rgba(2,132,199,0.05)",
-                        color: isDark ? "#4fc3f7" : "#0284c7",
-                        cursor: "pointer",
+                              ? "rgba(255,255,255,0.3)"
+                              : "rgba(0,0,0,0.3)",
+                        cursor: session?.user ? "pointer" : "not-allowed",
+                        opacity: session?.user ? 1 : 0.6,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 5,
+                    }}
+                >
+                    <HiBookmark size={18} />
+                </button>
+                <button
+                    onClick={() => setAiOpen(!aiOpen)}
+                    title={session?.user ? "AI Analyst" : "Sign in to use AI Analyst"}
+                    disabled={!session?.user}
+                    style={{
+                        height: "36px",
+                        padding: "0 10px",
+                        borderRadius: 8,
+                        border: `1px solid ${session?.user ? (isDark ? "rgba(79,195,247,0.3)" : "rgba(2,132,199,0.25)") : isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+                        background: !session?.user
+                            ? isDark
+                                ? "rgba(255,255,255,0.05)"
+                                : "rgba(0,0,0,0.05)"
+                            : aiOpen
+                              ? isDark
+                                  ? "rgba(79,195,247,0.2)"
+                                  : "rgba(2,132,199,0.15)"
+                              : isDark
+                                ? "rgba(79,195,247,0.08)"
+                                : "rgba(2,132,199,0.05)",
+                        color: session?.user
+                            ? isDark
+                                ? "#4fc3f7"
+                                : "#0284c7"
+                            : isDark
+                              ? "rgba(255,255,255,0.3)"
+                              : "rgba(0,0,0,0.3)",
+                        cursor: session?.user ? "pointer" : "not-allowed",
+                        opacity: session?.user ? 1 : 0.6,
                         fontFamily: '"Orbitron", monospace',
                         fontSize: 13,
                         display: "flex",
@@ -1229,7 +955,6 @@ export default function PaperGraph() {
                 />
             </div>
 
-            {/* ── Sidebar ─────────────────────────────────────────────────── */}
             <aside
                 style={{
                     position: "absolute",
@@ -1502,7 +1227,6 @@ export default function PaperGraph() {
                 </div>
             </aside>
 
-            {/* ── Tooltip ─────────────────────────────────────────────────── */}
             {hoveredNode && (
                 <div
                     style={{
@@ -1567,7 +1291,6 @@ export default function PaperGraph() {
                 </div>
             )}
 
-            {/* ── Stats bar ───────────────────────────────────────────────── */}
             {graphData.nodes.length > 0 && (
                 <div
                     style={{
@@ -1621,13 +1344,12 @@ export default function PaperGraph() {
                 </div>
             )}
 
-            {/* Selected Node Panel */}
             {selectedNode && (
                 <div
                     style={{
                         position: "absolute",
-                        bottom: 80, // Moved up to sit above the stats bar
-                        right: 20, // Moved from left to right
+                        bottom: 80,
+                        right: 20,
                         borderRadius: 12,
                         padding: "16px",
                         maxWidth: 280,
@@ -1761,7 +1483,7 @@ export default function PaperGraph() {
                                 marginBottom: 12,
                             }}
                         >
-                            OpenAlex Report ↗
+                            Open Link
                         </a>
                     )}
 
@@ -1800,31 +1522,39 @@ export default function PaperGraph() {
                         >
                             Close
                         </button>
-                        {session?.user && (
-                            <button
-                                onClick={handleSavePaper}
-                                style={{
-                                    padding: "6px 12px",
-                                    borderRadius: 6,
-                                    background: `${selectedNode.color}22`,
-                                    border: `1px solid ${selectedNode.color}66`,
-                                    color: selectedNode.color,
-                                    fontSize: 11,
-                                    fontWeight: 700,
-                                    cursor: "pointer",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 6,
-                                }}
-                            >
-                                <HiBookmark size={14} />
-                                Save Paper
-                            </button>
-                        )}
+                        <button
+                            onClick={handleSavePaper}
+                            disabled={!session?.user}
+                            title={session?.user ? "Save Paper" : "Sign in to save papers"}
+                            style={{
+                                padding: "6px 12px",
+                                borderRadius: 6,
+                                background: session?.user
+                                    ? `${selectedNode.color}22`
+                                    : isDark
+                                      ? "rgba(255,255,255,0.05)"
+                                      : "rgba(0,0,0,0.05)",
+                                border: `1px solid ${session?.user ? `${selectedNode.color}66` : isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+                                color: session?.user
+                                    ? selectedNode.color
+                                    : isDark
+                                      ? "rgba(255,255,255,0.3)"
+                                      : "rgba(0,0,0,0.3)",
+                                fontSize: 11,
+                                fontWeight: 700,
+                                cursor: session?.user ? "pointer" : "not-allowed",
+                                opacity: session?.user ? 1 : 0.6,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                            }}
+                        >
+                            <HiBookmark size={14} />
+                            Save Paper
+                        </button>
                     </div>
                     <br />
 
-                    {/* In-Degree / Out-Degree stats */}
                     {adjacencyList.get(selectedNode.id)?.size ? (
                         <>
                             <div
@@ -1935,7 +1665,7 @@ export default function PaperGraph() {
                                                                 borderBottom: `1px solid ${t.accent}88`,
                                                             }}
                                                         >
-                                                            OpenAlex ↗
+                                                            Open Link
                                                         </a>
                                                     )}
                                                 </div>
@@ -1949,7 +1679,6 @@ export default function PaperGraph() {
                 </div>
             )}
 
-            {/* AI Chat Panel */}
             <AiChatPanel
                 open={aiOpen}
                 onClose={() => setAiOpen(false)}
@@ -1960,7 +1689,6 @@ export default function PaperGraph() {
                 }}
             />
 
-            {/* Saved Papers Panel */}
             <SavedPapersPanel
                 open={savedOpen}
                 onClose={() => setSavedOpen(false)}
