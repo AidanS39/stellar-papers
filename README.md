@@ -1,6 +1,6 @@
 <div align="center">
 
-# Stellar Papers
+![StellarPapers](./public/logo_white.svg)
 
 _Explore academic papers through interactive, stellar graph visualizations._
 

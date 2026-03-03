@@ -2,12 +2,13 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import AuthButtons from "../app/components/AuthButtons";
-import AiChatPanel from "../app/components/AiChatPanel";
-import SavedPapersPanel from "../app/components/SavedPapersPanel";
-import { useTheme } from "../app/components/ThemeProvider";
+import AuthButtons from "./AuthButtons";
+import AiChatPanel from "./AiChatPanel";
+import SavedPapersPanel from "./SavedPapersPanel";
+import { useTheme } from "./ThemeProvider";
 import { useSession } from "next-auth/react";
 import { HiBookmark } from "react-icons/hi";
+
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
     ssr: false,
     loading: () => (
@@ -999,7 +1000,7 @@ export default function PaperGraph() {
                         marginBottom: 2,
                     }}
                 >
-                    STELLAR PAPERS
+                <img src="/logo_white.svg" ></img>
                 </div>
 
                 <input
