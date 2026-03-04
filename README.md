@@ -65,7 +65,7 @@ Stellar Papers is engineered for high-performance scale, maintaining ultra-low-l
 | Category              | Technologies                                                                        |
 | --------------------- | ----------------------------------------------------------------------------------- |
 | **Frontend**          | Next.js App Router, TypeScript, Tailwind CSS, react-force-graph-2d, D3              |
-| **Backend/API**       | Next.js API Routes, TypeScript, Auth.js                                             |
+| **Backend/API**       | Next.js API Routes, TypeScript, NextAuth.js, Node.js                                |
 | **Data**              | MongoDB, Neo4j, Python                                                              |
 | **External Services** | Google Gemini, Google reCAPTCHA, OpenAlex API, OAuth 2.0 Providers (Google, GitHub) |
 | **Deployment**        | Vercel CI/CD                                                                        |
