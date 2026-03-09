@@ -7,7 +7,7 @@ import AiChatPanel from "./AiChatPanel";
 import SavedPapersPanel from "./SavedPapersPanel";
 import { useTheme } from "./ThemeProvider";
 import { useSession } from "next-auth/react";
-import { HiBookmark } from "react-icons/hi";
+import { HiBookmark, HiX } from "react-icons/hi";
 
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
     ssr: false,
@@ -542,8 +542,8 @@ export default function PaperGraph() {
     const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [fieldsPresent, setFieldsPresent] = useState<string[]>([]);
-    const [maxNodes, setMaxNodes] = useState(50);
-    const [minYear, setMinYear] = useState(1980);
+    const [maxNodes, setMaxNodes] = useState(250);
+    const [minYear, setMinYear] = useState(1800);
     const [maxYear, setMaxYear] = useState(new Date().getFullYear());
     const [minCitations, setMinCitations] = useState(0);
     const [authorFilter, setAuthorFilter] = useState("");
@@ -801,12 +801,19 @@ export default function PaperGraph() {
     );
 
     const sliders = [
-        { label: "Max Papers", val: maxNodes, set: setMaxNodes, min: 1, max: 2000, step: 1 },
+        { 
+            label: "Max Papers", 
+            val: maxNodes, 
+            set: setMaxNodes, 
+            min: 1, 
+            max: 2000, 
+            step: 1 
+        },
         {
             label: "Min Year",
             val: minYear,
             set: setMinYear,
-            min: 1900,
+            min: 1800,
             max: new Date().getFullYear(),
             step: 1,
         },
@@ -1378,6 +1385,21 @@ export default function PaperGraph() {
                         backdropFilter: "blur(12px)",
                     }}
                 >
+                    <button
+                        onClick={() => setSelectedNode(null)}
+                        style={{
+                            background: "none",
+                            border: "none",
+                            color: isDark ? "rgba(200,222,255,0.5)" : "rgba(51,65,85,0.5)",
+                            cursor: "pointer",
+                            padding: 0,
+                            marginLeft: 4,
+                            marginBottom: 4,
+                            display: "flex",
+                        }}
+                    >
+                        <HiX size={18} />
+                    </button>
                     <div
                         style={{
                             fontSize: 13,
@@ -1524,21 +1546,7 @@ export default function PaperGraph() {
                         </a>
                     )}
 
-                    <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-                        <button
-                            onClick={() => setSelectedNode(null)}
-                            style={{
-                                padding: "6px 12px",
-                                borderRadius: 6,
-                                background: theme === "dark" ? "rgb(128, 0, 0)" : "rgb(255, 0, 0)",
-                                border: `1px solid ${t.tooltipBorder}`,
-                                color: theme === "dark" ? t.textMuted : "rgb(255, 255, 255)",
-                                fontSize: 11,
-                                cursor: "pointer",
-                            }}
-                        >
-                            Close
-                        </button>
+                    <div style={{ display: "flex", gap: 10, marginTop: 4 }}> 
                         <button
                             onClick={handleSavePaper}
                             disabled={!session?.user}

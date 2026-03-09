@@ -33,25 +33,27 @@ export async function POST(req: NextRequest) {
         if (graphContext) {
             const { nodes, links, fields } = graphContext;
             contextBlock = `\n\n--- CURRENT GRAPH DATA ---
-Total papers: ${nodes?.length || 0}
-Total connections: ${links?.length || 0}
-Fields present: ${fields?.join(", ") || "none"}
+                Total papers: ${nodes?.length || 0}
+                Total connections: ${links?.length || 0}
+                Fields present: ${fields?.join(", ") || "none"}
 
-Papers (title | year | citations | fields):
-${(nodes || [])
-    .slice(0, 80)
-    .map(
-        (n: any) =>
-            `• ${n.title} | ${n.year || "?"} | ${n.citations?.toLocaleString() || 0} citations | ${n.fields?.join(", ") || "?"}`,
-    )
-    .join("\n")}
+                Papers (title | year | citations | fields):
+                ${(nodes || [])
+                    .slice(0, 80)
+                    .map(
+                        (n: any) =>
+                            `• ${n.title} | ${n.year || "?"} | ${n.citations?.toLocaleString() || 0} citations | ${n.fields?.join(", ") || "?"}`,
+                    )
+                    .join("\n")}
 
-Connections: ${(links || [])
-                .slice(0, 50)
-                .map((l: any) => `${l.source} → ${l.target}`)
-                .join(", ")}
---- END GRAPH DATA ---`;
+                Connections: ${(links || [])
+                                .slice(0, 50)
+                                .map((l: any) => `${l.source.title} → ${l.target.title}`)
+                                .join(", ")}
+                --- END GRAPH DATA ---`;
         }
+
+        console.log(contextBlock)
 
         const fullPrompt = `${SYSTEM_PROMPT}${contextBlock}\n\nUser question: ${message}`;
 
